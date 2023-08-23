@@ -2,11 +2,11 @@
   "name": "feature-sliced-design-components",
   "displayName": "FSD Components",
   "description": "",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/MangriMen/feature-sliced-design-components"
   },
-  "version": "0.0.1",
   "engines": {
     "vscode": "^1.81.0"
   },
@@ -18,10 +18,25 @@
   "contributes": {
     "commands": [
       {
-        "command": "feature-sliced-design-components.helloWorld",
-        "title": "Hello World"
+        "command": "feature-sliced-design-components.createComponent",
+        "title": "Create FSD component"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "feature-sliced-design-components.createComponent",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "feature-sliced-design-components.createComponent",
+          "group": "navigation",
+          "when": "true"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
