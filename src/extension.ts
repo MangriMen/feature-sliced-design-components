@@ -29,13 +29,15 @@ async function createComponent(folderPath: string) {
   const rootIndexData = `export {default as ${componentName}} from './${componentName}';\nexport type * from './ts';`;
 
   const rootComponent = path.join(rootFolder, `${componentName}.tsx`);
-  const rootComponentData = `import { I${componentName}Props } from './ts';
+  const rootComponentData = `
+import { I${componentName}Props } from './ts';
 
 const ${componentName} = ({ ...props }: I${componentName}Props) => {
   return <div {...props}>{'${componentName}'}</div>;
 };
   
-export default ${componentName};`;
+export default ${componentName};
+`;
 
   const tsFolder = path.join(rootFolder, "ts");
 
