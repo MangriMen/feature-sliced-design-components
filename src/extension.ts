@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
+import * as vscode from 'vscode';
+import { ComponentOperator } from './componentOperator';
+import { components } from './defaultComponents';
 
 interface Command {
   command: string;
@@ -9,7 +9,7 @@ interface Command {
 
 const commands: Command[] = [
   {
-    command: "feature-sliced-design-components.createComponent",
+    command: 'feature-sliced-design-components.createComponent',
     callback: (uri: vscode.Uri) => {
       createComponent(uri.fsPath);
     },
@@ -17,43 +17,18 @@ const commands: Command[] = [
 ];
 
 async function createComponent(folderPath: string) {
-  const componentName =
-    (await vscode.window.showInputBox({
-      placeHolder: "Button",
-      prompt: "Enter name of the component",
-    })) ?? "";
+  const componentName = await vscode.window.showInputBox({
+    placeHolder: 'Button',
+    prompt: 'Enter name of the component',
+    ignoreFocusOut: true,
+  });
 
-  const rootFolder = path.join(folderPath, componentName);
+  if (!componentName) {
+    return;
+  }
 
-  const rootIndex = path.join(rootFolder, "index.ts");
-  const rootIndexData = `export {default as ${componentName}} from './${componentName}';\nexport type * from './ts';`;
-
-  const rootComponent = path.join(rootFolder, `${componentName}.tsx`);
-  const rootComponentData = `
-import { I${componentName}Props } from './ts';
-
-const ${componentName} = ({ ...props }: I${componentName}Props) => {
-  return <div {...props}>{'${componentName}'}</div>;
-};
-  
-export default ${componentName};
-`;
-
-  const tsFolder = path.join(rootFolder, "ts");
-
-  const tsIndex = path.join(tsFolder, "index.ts");
-  const tsIndexData = "export type * from './interfaces';";
-
-  const tsInterfaces = path.join(tsFolder, "interfaces.ts");
-  const tsInterfacesData = `export interface I${componentName}Props {}`;
-
-  fs.mkdirSync(rootFolder);
-  fs.writeFileSync(rootIndex, rootIndexData);
-  fs.writeFileSync(rootComponent, rootComponentData);
-
-  fs.mkdirSync(tsFolder);
-  fs.writeFileSync(tsIndex, tsIndexData);
-  fs.writeFileSync(tsInterfaces, tsInterfacesData);
+  const component = new ComponentOperator(components.defaultComponent);
+  component.write(folderPath, componentName);
 }
 
 function registerCommands(context: vscode.ExtensionContext) {
