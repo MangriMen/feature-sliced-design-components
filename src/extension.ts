@@ -3,6 +3,8 @@ import { ComponentOperator } from './componentOperator';
 import { defaultComponents } from './defaultComponents';
 import { defaultSegments } from './defaultSegments';
 import { FsStructure, writeFsStructure } from './lib';
+import * as path from 'path';
+import * as fs from 'fs-extra';
 
 interface Command {
   command: string;
@@ -13,6 +15,10 @@ const commands: Command[] = [
   {
     command: 'feature-sliced-design-components.createComponent',
     callback: (uri: vscode.Uri) => createComponent(uri.fsPath),
+  },
+  {
+    command: 'feature-sliced-design-components.createSegment',
+    callback: (uri: vscode.Uri) => createSegment(uri.fsPath),
   },
   {
     command: 'feature-sliced-design-components.createSlice',
@@ -33,6 +39,43 @@ async function createComponent(folderPath: string) {
 
   const component = new ComponentOperator(defaultComponents.defaultComponent);
   component.write(folderPath, componentName);
+}
+
+async function createSegment(folderPath: string) {
+  const quickPickSegments = Object.keys(defaultSegments).map(
+    (segment) =>
+      ({
+        label: segment,
+      } as vscode.QuickPickItem)
+  );
+
+  const segmentNames = await vscode.window.showQuickPick(quickPickSegments, {
+    canPickMany: true,
+    ignoreFocusOut: true,
+  });
+
+  if (!segmentNames) {
+    return;
+  }
+
+  const segments = segmentNames.reduce((acc, segmentItem) => {
+    acc[segmentItem.label] =
+      defaultSegments[segmentItem.label as keyof typeof defaultSegments];
+    return acc;
+  }, {} as FsStructure);
+
+  writeFsStructure(segments, folderPath);
+
+  const parentIndex = path.join(folderPath, 'index.ts');
+  if (fs.existsSync(parentIndex)) {
+    fs.appendFileSync(
+      parentIndex,
+      segmentNames.reduce(
+        (acc, segmentItem) => `${acc}export * from './${segmentItem.label}';\n`,
+        ''
+      )
+    );
+  }
 }
 
 async function createSlice(folderPath: string) {
