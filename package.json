@@ -22,6 +22,10 @@
       {
         "command": "feature-sliced-design-components.createComponent",
         "title": "Create FSD component"
+      },
+      {
+        "command": "feature-sliced-design-components.createSlice",
+        "title": "Create FSD slice"
       }
     ],
     "menus": {
@@ -29,11 +33,20 @@
         {
           "command": "feature-sliced-design-components.createComponent",
           "when": "false"
+        },
+        {
+          "command": "feature-sliced-design-components.createSlice",
+          "when": "false"
         }
       ],
       "explorer/context": [
         {
           "command": "feature-sliced-design-components.createComponent",
+          "group": "navigation",
+          "when": "true"
+        },
+        {
+          "command": "feature-sliced-design-components.createSlice",
           "group": "navigation",
           "when": "true"
         }
