@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { ComponentOperator } from './componentOperator';
-import { components } from './defaultComponents';
+import { defaultComponents } from './defaultComponents';
+import { defaultSegments } from './defaultSegments';
+import { FsStructure, writeFsStructure } from './lib';
 
 interface Command {
   command: string;
@@ -10,15 +12,17 @@ interface Command {
 const commands: Command[] = [
   {
     command: 'feature-sliced-design-components.createComponent',
-    callback: (uri: vscode.Uri) => {
-      createComponent(uri.fsPath);
-    },
+    callback: (uri: vscode.Uri) => createComponent(uri.fsPath),
+  },
+  {
+    command: 'feature-sliced-design-components.createSlice',
+    callback: (uri: vscode.Uri) => createSlice(uri.fsPath),
   },
 ];
 
 async function createComponent(folderPath: string) {
   const componentName = await vscode.window.showInputBox({
-    placeHolder: 'Button',
+    placeHolder: 'Component',
     prompt: 'Enter name of the component',
     ignoreFocusOut: true,
   });
@@ -27,8 +31,54 @@ async function createComponent(folderPath: string) {
     return;
   }
 
-  const component = new ComponentOperator(components.defaultComponent);
+  const component = new ComponentOperator(defaultComponents.defaultComponent);
   component.write(folderPath, componentName);
+}
+
+async function createSlice(folderPath: string) {
+  const quickPickSegments = Object.keys(defaultSegments).map(
+    (segment) =>
+      ({
+        label: segment,
+        picked: segment === 'ui',
+      } as vscode.QuickPickItem)
+  );
+
+  const sliceName = await vscode.window.showInputBox({
+    placeHolder: 'slice',
+    prompt: 'Enter name of the slice',
+    ignoreFocusOut: true,
+  });
+
+  if (!sliceName) {
+    return;
+  }
+
+  const segmentNames = await vscode.window.showQuickPick(quickPickSegments, {
+    canPickMany: true,
+    ignoreFocusOut: true,
+  });
+
+  if (!segmentNames) {
+    return;
+  }
+
+  const sliceContent = segmentNames.reduce((acc, segmentItem) => {
+    acc[segmentItem.label] =
+      defaultSegments[segmentItem.label as keyof typeof defaultSegments];
+    return acc;
+  }, {} as FsStructure);
+
+  sliceContent['index.ts'] = segmentNames.reduce(
+    (acc, segmentItem) => `${acc}export * from './${segmentItem.label}';\n`,
+    ''
+  );
+
+  const slice: FsStructure = {
+    [sliceName]: sliceContent,
+  };
+
+  writeFsStructure(slice, folderPath);
 }
 
 function registerCommands(context: vscode.ExtensionContext) {

@@ -1,4 +1,4 @@
-export const components = {
+export const defaultComponents = {
   defaultComponent: {
     'ComponentName.tsx':
       "import { IComponentNameProps } from './ts';\n\nconst ComponentName = ({ ...props }: IComponentNameProps) => {\n  return <div {...props}>{'ComponentName'}</div>;\n};\n\nexport default ComponentName;\n",
