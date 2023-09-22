@@ -24,6 +24,10 @@
         "title": "Create FSD component"
       },
       {
+        "command": "feature-sliced-design-components.createSegment",
+        "title": "Create FSD segment"
+      },
+      {
         "command": "feature-sliced-design-components.createSlice",
         "title": "Create FSD slice"
       }
@@ -35,6 +39,10 @@
           "when": "false"
         },
         {
+          "command": "feature-sliced-design-components.createSegment",
+          "when": "false"
+        },
+        {
           "command": "feature-sliced-design-components.createSlice",
           "when": "false"
         }
@@ -42,6 +50,11 @@
       "explorer/context": [
         {
           "command": "feature-sliced-design-components.createComponent",
+          "group": "navigation",
+          "when": "true"
+        },
+        {
+          "command": "feature-sliced-design-components.createSegment",
           "group": "navigation",
           "when": "true"
         },
