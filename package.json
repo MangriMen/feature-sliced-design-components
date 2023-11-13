@@ -1,5 +1,5 @@
 {
-  "name": "feature-sliced-design-components",
+  "name": "fsd-components",
   "publisher": "mangrimen",
   "displayName": "FSD Components",
   "description": "FSD components creator",
@@ -18,48 +18,61 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "properties": {
+        "fsd-components.componentTemplate": {
+          "type": "string",
+          "default": null,
+          "description": "Test"
+        }
+      }
+    },
     "commands": [
       {
-        "command": "feature-sliced-design-components.createComponent",
+        "command": "fsd-components.changeComponentTemplate",
+        "title": "Change component template"
+      },
+      {
+        "command": "fsd-components.createComponent",
         "title": "Create FSD component"
       },
       {
-        "command": "feature-sliced-design-components.createSegment",
+        "command": "fsd-components.createSegment",
         "title": "Create FSD segment"
       },
       {
-        "command": "feature-sliced-design-components.createSlice",
+        "command": "fsd-components.createSlice",
         "title": "Create FSD slice"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "feature-sliced-design-components.createComponent",
+          "command": "fsd-components.createComponent",
           "when": "false"
         },
         {
-          "command": "feature-sliced-design-components.createSegment",
+          "command": "fsd-components.createSegment",
           "when": "false"
         },
         {
-          "command": "feature-sliced-design-components.createSlice",
+          "command": "fsd-components.createSlice",
           "when": "false"
         }
       ],
       "explorer/context": [
         {
-          "command": "feature-sliced-design-components.createComponent",
+          "command": "fsd-components.createComponent",
           "group": "navigation",
           "when": "true"
         },
         {
-          "command": "feature-sliced-design-components.createSegment",
+          "command": "fsd-components.createSegment",
           "group": "navigation",
           "when": "true"
         },
         {
-          "command": "feature-sliced-design-components.createSlice",
+          "command": "fsd-components.createSlice",
           "group": "navigation",
           "when": "true"
         }
