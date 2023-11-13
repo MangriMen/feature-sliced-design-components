@@ -1,10 +1,14 @@
 import * as vscode from 'vscode';
 import { ComponentOperator } from './componentOperator';
-import { defaultComponents } from './defaultComponents';
 import { defaultSegments } from './defaultSegments';
 import { FsStructure, writeFsStructure } from './lib';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import {
+  getAvailableComponents,
+  setCurrentComponentTemplateKey,
+  getCurrentComponentTemplateKey,
+} from './configuration';
 
 interface Command {
   command: string;
@@ -13,20 +17,43 @@ interface Command {
 
 const commands: Command[] = [
   {
-    command: 'feature-sliced-design-components.createComponent',
-    callback: (uri: vscode.Uri) => createComponent(uri.fsPath),
+    command: 'fsd-components.changeComponentTemplate',
+    callback: (context: vscode.ExtensionContext) =>
+      changeComponentTemplate(context),
   },
   {
-    command: 'feature-sliced-design-components.createSegment',
+    command: 'fsd-components.createComponent',
+    callback: (context: vscode.ExtensionContext, uri: vscode.Uri) =>
+      createComponent(context, uri.fsPath),
+  },
+  {
+    command: 'fsd-components.createSegment',
     callback: (uri: vscode.Uri) => createSegment(uri.fsPath),
   },
   {
-    command: 'feature-sliced-design-components.createSlice',
+    command: 'fsd-components.createSlice',
     callback: (uri: vscode.Uri) => createSlice(uri.fsPath),
   },
 ];
 
-async function createComponent(folderPath: string) {
+async function changeComponentTemplate(context: vscode.ExtensionContext) {
+  const availableComponents = getAvailableComponents(context);
+
+  const componentTemplateKey = await vscode.window.showQuickPick(
+    Object.keys(availableComponents)
+  );
+
+  if (!componentTemplateKey) {
+    return;
+  }
+
+  setCurrentComponentTemplateKey(componentTemplateKey);
+}
+
+async function createComponent(
+  context: vscode.ExtensionContext,
+  folderPath: string
+) {
   const componentName = await vscode.window.showInputBox({
     placeHolder: 'Component',
     prompt: 'Enter name of the component',
@@ -37,7 +64,19 @@ async function createComponent(folderPath: string) {
     return;
   }
 
-  const component = new ComponentOperator(defaultComponents.defaultComponent);
+  const currentComponentTemplateKey = getCurrentComponentTemplateKey();
+  const availableComponents = getAvailableComponents(context);
+
+  const currentTemplate =
+    availableComponents[currentComponentTemplateKey || 'defaultComponent'];
+
+  if (!currentTemplate) {
+    vscode.window.showErrorMessage(
+      `Can't find "${currentComponentTemplateKey}" template`
+    );
+  }
+
+  const component = new ComponentOperator(currentTemplate);
   component.write(folderPath, componentName);
 }
 
@@ -126,7 +165,9 @@ async function createSlice(folderPath: string) {
 
 function registerCommands(context: vscode.ExtensionContext) {
   const disposables = commands.map((command) =>
-    vscode.commands.registerCommand(command.command, command.callback)
+    vscode.commands.registerCommand(command.command, (args) =>
+      command.callback(context, args)
+    )
   );
 
   context.subscriptions.push(...disposables);
