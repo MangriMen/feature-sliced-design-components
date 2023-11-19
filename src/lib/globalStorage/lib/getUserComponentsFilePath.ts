@@ -10,6 +10,7 @@ export const getUserComponentsUri = (context: vscode.ExtensionContext) => {
   );
 
   if (!fs.existsSync(userComponentsFileURI.fsPath)) {
+    fs.ensureFileSync(userComponentsFileURI.fsPath);
     fs.writeJSONSync(userComponentsFileURI.fsPath, {});
   }
 
