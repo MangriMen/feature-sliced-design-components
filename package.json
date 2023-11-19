@@ -3,7 +3,7 @@
   "publisher": "mangrimen",
   "displayName": "FSD Components",
   "description": "FSD components creator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/MangriMen/feature-sliced-design-components"
