@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs-extra';
+
 import { USER_COMPONENTS_FILENAME } from '../config';
 
-export const getUserComponents = (context: vscode.ExtensionContext) => {
+export const getUserComponentsUri = (context: vscode.ExtensionContext) => {
   const userComponentsFileURI = vscode.Uri.joinPath(
     context.globalStorageUri,
     USER_COMPONENTS_FILENAME
@@ -12,5 +13,5 @@ export const getUserComponents = (context: vscode.ExtensionContext) => {
     fs.writeJSONSync(userComponentsFileURI.fsPath, {});
   }
 
-  return fs.readJSONSync(userComponentsFileURI.fsPath);
+  return userComponentsFileURI;
 };

@@ -29,8 +29,12 @@
     },
     "commands": [
       {
+        "command": "fsd-components.openComponentsConfig",
+        "title": "FSD Components: Open components config"
+      },
+      {
         "command": "fsd-components.changeComponentTemplate",
-        "title": "Change component template"
+        "title": "FSD Components: Change component template"
       },
       {
         "command": "fsd-components.createComponent",
