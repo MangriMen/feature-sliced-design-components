@@ -1,1 +1,1 @@
-export * from './writeFsStructure';
+export * from './getExportEntry';

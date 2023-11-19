@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs-extra';
-import { Component } from '../../componentOperator';
 
 const userComponentsFilename = 'userComponents.json';
 

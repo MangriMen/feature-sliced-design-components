@@ -1,4 +1,4 @@
-export const defaultSegments = {
+export const DEFAULT_SEGMENTS = {
   ui: {
     'index.ts': '',
   },
