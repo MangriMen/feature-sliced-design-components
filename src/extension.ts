@@ -1,14 +1,20 @@
 import * as vscode from 'vscode';
-import { ComponentOperator } from './componentOperator';
-import { defaultSegments } from './defaultSegments';
-import { FsStructure, writeFsStructure } from './lib';
-import * as path from 'path';
-import * as fs from 'fs-extra';
+
 import {
   getAvailableComponents,
   setCurrentComponentTemplateKey,
   getCurrentComponentTemplateKey,
-} from './configuration';
+} from './lib/configuration';
+import { TemplateType, showTemplateNotFoundError } from './lib/errors';
+import {
+  showComponentNameInputBox,
+  showSegmentNamesQuickPick,
+  showSliceNameInputBox,
+} from './lib/inputs';
+
+import { Slice } from './lib/slice';
+import { Component } from './lib/component';
+import { getSegmentsFromSegmentNames } from './lib/segment';
 
 interface Command {
   command: string;
@@ -28,11 +34,11 @@ const commands: Command[] = [
   },
   {
     command: 'fsd-components.createSegment',
-    callback: (uri: vscode.Uri) => createSegment(uri.fsPath),
+    callback: (_, uri: vscode.Uri) => createSegment(uri.fsPath),
   },
   {
     command: 'fsd-components.createSlice',
-    callback: (uri: vscode.Uri) => createSlice(uri.fsPath),
+    callback: (_, uri: vscode.Uri) => createSlice(uri.fsPath),
   },
 ];
 
@@ -54,113 +60,62 @@ async function createComponent(
   context: vscode.ExtensionContext,
   folderPath: string
 ) {
-  const componentName = await vscode.window.showInputBox({
-    placeHolder: 'Component',
-    prompt: 'Enter name of the component',
-    ignoreFocusOut: true,
-  });
-
+  const componentName = await showComponentNameInputBox();
   if (!componentName) {
     return;
   }
 
   const currentComponentTemplateKey = getCurrentComponentTemplateKey();
-  const availableComponents = getAvailableComponents(context);
-
-  const currentTemplate =
-    availableComponents[currentComponentTemplateKey || 'defaultComponent'];
-
-  if (!currentTemplate) {
-    vscode.window.showErrorMessage(
-      `Can't find "${currentComponentTemplateKey}" template`
+  if (!currentComponentTemplateKey) {
+    showTemplateNotFoundError(
+      TemplateType.component,
+      currentComponentTemplateKey
     );
+    return;
   }
 
-  const component = new ComponentOperator(currentTemplate);
-  component.write(folderPath, componentName);
+  const availableComponents = getAvailableComponents(context);
+
+  const currentTemplate = availableComponents[currentComponentTemplateKey];
+  if (!currentTemplate) {
+    showTemplateNotFoundError(
+      TemplateType.component,
+      currentComponentTemplateKey
+    );
+    return;
+  }
+
+  const component = new Component(componentName, currentTemplate);
+  component.write(folderPath);
 }
 
 async function createSegment(folderPath: string) {
-  const quickPickSegments = Object.keys(defaultSegments).map(
-    (segment) =>
-      ({
-        label: segment,
-      } as vscode.QuickPickItem)
-  );
-
-  const segmentNames = await vscode.window.showQuickPick(quickPickSegments, {
-    canPickMany: true,
-    ignoreFocusOut: true,
-  });
-
+  const segmentNames = await showSegmentNamesQuickPick();
   if (!segmentNames) {
     return;
   }
 
-  const segments = segmentNames.reduce((acc, segmentItem) => {
-    acc[segmentItem.label] =
-      defaultSegments[segmentItem.label as keyof typeof defaultSegments];
-    return acc;
-  }, {} as FsStructure);
+  const segments = getSegmentsFromSegmentNames(segmentNames);
 
-  writeFsStructure(segments, folderPath);
-
-  const parentIndex = path.join(folderPath, 'index.ts');
-  if (fs.existsSync(parentIndex)) {
-    fs.appendFileSync(
-      parentIndex,
-      segmentNames.reduce(
-        (acc, segmentItem) => `${acc}export * from './${segmentItem.label}';\n`,
-        ''
-      )
-    );
-  }
+  segments.forEach((segment) => segment.write(folderPath, true));
 }
 
 async function createSlice(folderPath: string) {
-  const quickPickSegments = Object.keys(defaultSegments).map(
-    (segment) =>
-      ({
-        label: segment,
-        picked: segment === 'ui',
-      } as vscode.QuickPickItem)
-  );
-
-  const sliceName = await vscode.window.showInputBox({
-    placeHolder: 'slice',
-    prompt: 'Enter name of the slice',
-    ignoreFocusOut: true,
-  });
-
+  const sliceName = await showSliceNameInputBox();
   if (!sliceName) {
     return;
   }
 
-  const segmentNames = await vscode.window.showQuickPick(quickPickSegments, {
-    canPickMany: true,
-    ignoreFocusOut: true,
-  });
-
+  const segmentNames = await showSegmentNamesQuickPick(['ui']);
   if (!segmentNames) {
     return;
   }
 
-  const sliceContent = segmentNames.reduce((acc, segmentItem) => {
-    acc[segmentItem.label] =
-      defaultSegments[segmentItem.label as keyof typeof defaultSegments];
-    return acc;
-  }, {} as FsStructure);
+  const segments = getSegmentsFromSegmentNames(segmentNames);
 
-  sliceContent['index.ts'] = segmentNames.reduce(
-    (acc, segmentItem) => `${acc}export * from './${segmentItem.label}';\n`,
-    ''
-  );
-
-  const slice: FsStructure = {
-    [sliceName]: sliceContent,
-  };
-
-  writeFsStructure(slice, folderPath);
+  const slice = new Slice(sliceName);
+  slice.addSegments(segments);
+  slice.write(folderPath);
 }
 
 function registerCommands(context: vscode.ExtensionContext) {
