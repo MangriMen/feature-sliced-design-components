@@ -22,8 +22,8 @@
       "properties": {
         "fsd-components.componentTemplate": {
           "type": "string",
-          "default": null,
-          "description": "Test"
+          "default": "defaultComponent",
+          "description": "Component template key"
         }
       }
     },
