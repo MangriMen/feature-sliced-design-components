@@ -25,26 +25,26 @@ interface Command {
 
 const commands: Command[] = [
   {
-    command: 'fsd-components.openComponentsConfig',
+    command: 'feature-sliced-design-components.openComponentsConfig',
     callback: (context: vscode.ExtensionContext) =>
       openComponentsConfig(context),
   },
   {
-    command: 'fsd-components.changeComponentTemplate',
+    command: 'feature-sliced-design-components.changeComponentTemplate',
     callback: (context: vscode.ExtensionContext) =>
       changeComponentTemplate(context),
   },
   {
-    command: 'fsd-components.createComponent',
+    command: 'feature-sliced-design-components.createComponent',
     callback: (context: vscode.ExtensionContext, uri: vscode.Uri) =>
       createComponent(context, uri.fsPath),
   },
   {
-    command: 'fsd-components.createSegment',
+    command: 'feature-sliced-design-components.createSegment',
     callback: (_, uri: vscode.Uri) => createSegment(uri.fsPath),
   },
   {
-    command: 'fsd-components.createSlice',
+    command: 'feature-sliced-design-components.createSlice',
     callback: (_, uri: vscode.Uri) => createSlice(uri.fsPath),
   },
 ];
