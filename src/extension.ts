@@ -7,6 +7,7 @@ import {
 } from './lib/configuration';
 import { TemplateType, showTemplateNotFoundError } from './lib/errors';
 import {
+  showAvailableComponentsQuickPick,
   showComponentNameInputBox,
   showSegmentNamesQuickPick,
   showSliceNameInputBox,
@@ -15,6 +16,7 @@ import {
 import { Slice } from './lib/slice';
 import { Component } from './lib/component';
 import { getSegmentsFromSegmentNames } from './lib/segment';
+import { getUserComponentsUri } from './lib/globalStorage/lib/getUserComponentsFilePath';
 
 interface Command {
   command: string;
@@ -22,6 +24,11 @@ interface Command {
 }
 
 const commands: Command[] = [
+  {
+    command: 'fsd-components.openComponentsConfig',
+    callback: (context: vscode.ExtensionContext) =>
+      openComponentsConfig(context),
+  },
   {
     command: 'fsd-components.changeComponentTemplate',
     callback: (context: vscode.ExtensionContext) =>
@@ -42,13 +49,16 @@ const commands: Command[] = [
   },
 ];
 
+async function openComponentsConfig(context: vscode.ExtensionContext) {
+  const userComponentsUri = getUserComponentsUri(context);
+
+  vscode.workspace
+    .openTextDocument(userComponentsUri)
+    .then((doc) => vscode.window.showTextDocument(doc));
+}
+
 async function changeComponentTemplate(context: vscode.ExtensionContext) {
-  const availableComponents = getAvailableComponents(context);
-
-  const componentTemplateKey = await vscode.window.showQuickPick(
-    Object.keys(availableComponents)
-  );
-
+  const componentTemplateKey = await showAvailableComponentsQuickPick(context);
   if (!componentTemplateKey) {
     return;
   }
